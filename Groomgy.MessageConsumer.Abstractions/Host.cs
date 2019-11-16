@@ -74,7 +74,7 @@ namespace Groomgy.MessageConsumer.Abstractions
 
             _consumer.Consume(async raw =>
             {
-                var sw = Stopwatch.StartNew();
+                var sw1 = Stopwatch.StartNew();
                 var isMapped = false;
                 var handled = false;
 
@@ -93,7 +93,7 @@ namespace Groomgy.MessageConsumer.Abstractions
                         args[0] = context;
                         args[1] = raw;
 
-                        var intermediateStw = Stopwatch.StartNew();
+                        var sw2 = Stopwatch.StartNew();
                         try
                         {
                             logger.LogInformation(
@@ -105,7 +105,7 @@ namespace Groomgy.MessageConsumer.Abstractions
                             
                             logger.LogInformation(
                                 "Completed #{type}.Map in {elapsedMs} ms. corId={corId} context={context}", 
-                                mapperType, intermediateStw.ElapsedMilliseconds, context.CorrelationId, context
+                                mapperType, sw2.ElapsedMilliseconds, context.CorrelationId, context
                             );
                         }
                         catch (Exception ex)
@@ -129,7 +129,7 @@ namespace Groomgy.MessageConsumer.Abstractions
 
                             try
                             {
-                                intermediateStw.Restart();
+                                sw2.Restart();
                                 logger.LogInformation(
                                     "Start #{type}.CanHandle. corId={corId} context={context}", 
                                     handlerType, context.CorrelationId, context
@@ -139,7 +139,7 @@ namespace Groomgy.MessageConsumer.Abstractions
 
                                 logger.LogInformation(
                                     "Completed #{type}.CanHandle in {elapsedMs} ms. corId={corId} context={context}", 
-                                    handlerType, intermediateStw.ElapsedMilliseconds, context.CorrelationId, context
+                                    handlerType, sw2.ElapsedMilliseconds, context.CorrelationId, context
                                 );
                             }
                             catch (Exception ex)
@@ -154,7 +154,7 @@ namespace Groomgy.MessageConsumer.Abstractions
 
                             try
                             {
-                                intermediateStw.Restart();
+                                sw2.Restart();
                                 logger.LogInformation(
                                     "Start #{type}.Handle. corId={corId} type= context={context}", 
                                     handlerType, context.CorrelationId, context
@@ -164,7 +164,7 @@ namespace Groomgy.MessageConsumer.Abstractions
 
                                 logger.LogInformation(
                                     "Completed #{type}.Handle in {elapsedMs} ms. corId={corId} context={context}", 
-                                    handlerType, intermediateStw.ElapsedMilliseconds, context.CorrelationId, context
+                                    handlerType, sw2.ElapsedMilliseconds, context.CorrelationId, context
                                 );
                             }
                             catch (Exception ex)
@@ -183,8 +183,8 @@ namespace Groomgy.MessageConsumer.Abstractions
                         if (handled)
                         {
                             logger.LogInformation(
-                                "Completed consuming message. corId={corId} context={context} elapsedMs={elapsedMs}",
-                                context.CorrelationId, context, sw.ElapsedMilliseconds
+                                "Successfully consumed message in {elapsedMs} ms. corId={corId} context={context}",
+                                sw1.ElapsedMilliseconds, context.CorrelationId, context
                             );
                             break;
                         }
