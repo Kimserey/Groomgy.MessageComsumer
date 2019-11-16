@@ -1,14 +1,34 @@
 using System;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Groomgy.MessageConsumer.Abstractions;
+using Newtonsoft.Json;
 
 namespace Groomgy.MessageConsumer
 {
-    public class FakeConsumer: IConsumer
+    public class Consumer: IConsumer, IDisposable
     {
+        private readonly  Subject<string> _subject;
+
+        public Consumer()
+        {
+            _subject = new Subject<string>();
+        }
+
+        public void Send(string message)
+        {
+            _subject.OnNext(JsonConvert.SerializeObject(new Message { Content = message }));
+        }
+
         public Task Consume(Action<string> consume)
         {
-            throw new NotImplementedException();
+            _subject.Subscribe(consume);
+            return Task.CompletedTask;
+        }
+
+        public void Dispose()
+        {
+            _subject?.Dispose();
         }
     }
 }

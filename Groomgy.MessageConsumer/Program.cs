@@ -1,4 +1,7 @@
-﻿using Groomgy.MessageConsumer.Abstractions;
+﻿using System;
+using System.Threading;
+using Groomgy.MessageConsumer.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace Groomgy.MessageConsumer
 {
@@ -6,14 +9,21 @@ namespace Groomgy.MessageConsumer
     {
         static void Main(string[] args)
         {
-            var fake = new FakeConsumer();
+            using var consumer = new Consumer();
 
-            var host = new Host(fake)
+            var host = new Host(consumer)
                 .ConfigureServices((config, services) => { })
+                .ConfigureLogger(builder => builder.AddConsole())
                 .AddMapper<Message, MessageMapper>()
                 .AddHandler<Message, MessageHandler>();
 
             host.Start();
+
+            while (true)
+            {
+                var line = Console.ReadLine();
+                consumer.Send(line);
+            }
         }
     }
 }

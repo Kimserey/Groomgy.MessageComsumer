@@ -14,11 +14,19 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.0.0" />
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+      <PackageReference Include="System.Reactive" Version="4.2.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Groomgy.MessageConsumer.Abstractions\Groomgy.MessageConsumer.Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>
