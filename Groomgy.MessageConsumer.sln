@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Groomgy.MessageConsumer", "Groomgy.MessageConsumer\Groomgy.MessageConsumer.csproj", "{EAC1AE49-FBBD-4152-854E-388FE63699A6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EAC1AE49-FBBD-4152-854E-388FE63699A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAC1AE49-FBBD-4152-854E-388FE63699A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAC1AE49-FBBD-4152-854E-388FE63699A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAC1AE49-FBBD-4152-854E-388FE63699A6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
