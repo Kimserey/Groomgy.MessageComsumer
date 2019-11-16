@@ -67,19 +67,21 @@ namespace Groomgy.MessageConsumer.Abstractions
             var provider =
                 _services.BuildServiceProvider();
 
-            var logger = provider.GetRequiredService<ILogger<Host>>();
-
             var context = 
                 new Context { CorrelationId = Guid.NewGuid().ToString() };
 
+            var sw1 = new Stopwatch();
+            var sw2 = new Stopwatch();
+
             _consumer.Consume(async raw =>
             {
-                var sw1 = Stopwatch.StartNew();
                 var isMapped = false;
                 var handled = false;
 
                 using (var scope = provider.CreateScope())
                 {
+                    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Host>>();
+                    sw1.Restart();
                     logger.LogInformation(
                         "Starting consuming message. corId={corId}", context.CorrelationId
                     );
@@ -93,25 +95,26 @@ namespace Groomgy.MessageConsumer.Abstractions
                         args[0] = context;
                         args[1] = raw;
 
-                        var sw2 = Stopwatch.StartNew();
+                        sw2.Restart();
                         try
                         {
                             logger.LogInformation(
-                                "Calling #{type}.Map. corId={corId} raw={raw}", 
+                                "Calling #{mapperType}.Map. corId={corId} raw={raw}", 
                                 mapperType, context.CorrelationId, raw
                             );
 
                             isMapped = await (Task<bool>) mapFunc.Invoke(mapper, args);
                             
                             logger.LogInformation(
-                                "Completed #{type}.Map in {elapsedMs} ms. corId={corId} context={context}", 
+                                "Completed #{mapperType}.Map in {elapsedMs} ms. corId={corId} context={context}", 
                                 mapperType, sw2.ElapsedMilliseconds, context.CorrelationId, context
                             );
                         }
                         catch (Exception ex)
                         {
                             logger.LogError(ex,
-                                "A failure occurred while calling #{type}.Map. corId={corId} context={context} raw={raw} ex={ex}", 
+                                "A failure occurred while calling #{mapperType}.Map. corId={corId} context={context} " 
+                                + "raw={raw} ex={ex}", 
                                 mapperType, context.CorrelationId, context, raw, ex.Message);
                         }
 
@@ -131,21 +134,22 @@ namespace Groomgy.MessageConsumer.Abstractions
                             {
                                 sw2.Restart();
                                 logger.LogInformation(
-                                    "Start #{type}.CanHandle. corId={corId} context={context}", 
+                                    "Start #{handlerType}.CanHandle. corId={corId} context={context}", 
                                     handlerType, context.CorrelationId, context
                                 );
 
                                 canHandle = await (Task<bool>) canHandleFunc.Invoke(handler, new[] {context, mapped});
 
                                 logger.LogInformation(
-                                    "Completed #{type}.CanHandle in {elapsedMs} ms. corId={corId} context={context}", 
+                                    "Completed #{handlerType}.CanHandle in {elapsedMs} ms. corId={corId} context={context}", 
                                     handlerType, sw2.ElapsedMilliseconds, context.CorrelationId, context
                                 );
                             }
                             catch (Exception ex)
                             {
                                 logger.LogError(ex,
-                                    "A failure occurred during #{type}.CanHandle. corId={corId} context={context} mapped={mapped} ex={ex}",
+                                    "A failure occurred during #{handlerType}.CanHandle. corId={corId} context={context} "
+                                    + "mapped={mapped} ex={ex}",
                                     handlerType, context.CorrelationId, context, mapped, ex.Message);
                             }
 
@@ -156,43 +160,50 @@ namespace Groomgy.MessageConsumer.Abstractions
                             {
                                 sw2.Restart();
                                 logger.LogInformation(
-                                    "Start #{type}.Handle. corId={corId} type= context={context}", 
+                                    "Start #{handlerType}.Handle. corId={corId} type= context={context}", 
                                     handlerType, context.CorrelationId, context
                                 );
 
                                 handled = await (Task<bool>) handleFunc.Invoke(handler, new[] {context, mapped});
 
                                 logger.LogInformation(
-                                    "Completed #{type}.Handle in {elapsedMs} ms. corId={corId} context={context}", 
+                                    "Completed #{handlerType}.Handle in {elapsedMs} ms. corId={corId} context={context}",
                                     handlerType, sw2.ElapsedMilliseconds, context.CorrelationId, context
                                 );
                             }
                             catch (Exception ex)
                             {
                                 logger.LogError(ex,
-                                    "A failure occurred during #{type}.Handle. corId={corId} context={context} mapped={mapped} ex={ex}", 
+                                    "A failure occurred during #{handlerType}.Handle. corId={corId} context={context} mapped={mapped} ex={ex}", 
                                     handlerType, context.CorrelationId, context, mapped, ex.Message);
                             }
 
                             if (handled)
                             {
+                                logger.LogInformation(
+                                    "Successfully consumed message in {elapsedMs} ms with #{mapperType}/#{handlerType}. corId={corId} context={context}",
+                                    sw1.ElapsedMilliseconds, mapperType, handlerType, context.CorrelationId, context
+                                    );
                                 break;
                             }
                         }
 
                         if (handled)
-                        {
-                            logger.LogInformation(
-                                "Successfully consumed message in {elapsedMs} ms. corId={corId} context={context}",
-                                sw1.ElapsedMilliseconds, context.CorrelationId, context
-                            );
                             break;
-                        }
+                    }
+
+                    if (!handled)
+                    {
+                        logger.LogWarning(
+                            "Failed to consume message and will be skipped. corId={corId} context={context} " 
+                            + "elapsedMs={elapsedMs}",
+                            context.CorrelationId, context, sw1.ElapsedMilliseconds
+                        );
                     }
                 }
             });
             
-            logger.LogInformation(
+            provider.GetRequiredService<ILogger<Host>>().LogInformation(
                 "Consumer successfully started."
             );
         }
