@@ -1,14 +1,10 @@
 using System;
 using System.Threading.Tasks;
+using Groomgy.MessageConsumer.Abstractions;
 
 namespace Groomgy.MessageConsumer
 {
-    public interface IFakeConsumer
-    {
-        Task Consume(Action<string> consume);
-    }
-
-    public class FakeConsumer: IFakeConsumer
+    public class FakeConsumer: IConsumer
     {
         public Task Consume(Action<string> consume)
         {

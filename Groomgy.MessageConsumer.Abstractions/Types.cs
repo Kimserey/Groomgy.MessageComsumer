@@ -1,10 +1,21 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Groomgy.MessageConsumer
+namespace Groomgy.MessageConsumer.Abstractions
 {
+    public class Context: Dictionary<string ,string>
+    {
+        public string CorrelationId { get; set; }
+    }
+
+    public interface IConsumer
+    {
+        Task Consume(Action<string> consume);
+    }
+
     public interface IHandler<in TMessage>
     {
         Task<bool> CanHandle(Context context, TMessage message);

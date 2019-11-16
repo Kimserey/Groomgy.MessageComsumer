@@ -1,4 +1,6 @@
-﻿namespace Groomgy.MessageConsumer
+﻿using Groomgy.MessageConsumer.Abstractions;
+
+namespace Groomgy.MessageConsumer
 {
     class Program
     {
@@ -8,6 +10,7 @@
 
             var host = new Host(fake)
                 .ConfigureServices((config, services) => { })
+                .AddMapper<Message, MessageMapper>()
                 .AddHandler<Message, MessageHandler>();
 
             host.Start();

@@ -7,11 +7,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Groomgy.MessageConsumer
+namespace Groomgy.MessageConsumer.Abstractions
 {
     public class Host: IHost
     {
-        private readonly IFakeConsumer _consumer;
+        private readonly IConsumer _consumer;
         
         private readonly IServiceCollection _services;
         private readonly IConfiguration  _configuration;
@@ -19,7 +19,7 @@ namespace Groomgy.MessageConsumer
         private readonly List<(Type, MethodInfo, MethodInfo)> _handlerMethods = new List<(Type, MethodInfo, MethodInfo)>();
         private readonly List<(Type, MethodInfo)> _mapperMethods = new List<(Type, MethodInfo)>();
 
-        public Host(IFakeConsumer consumer)
+        public Host(IConsumer consumer)
         {
             _consumer = consumer;
             _services = new ServiceCollection();
