@@ -1,30 +1,32 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Groomgy.MessageConsumer
 {
-    public class Message
+    public interface IHandler<in TMessage>
     {
+        Task<bool> CanHandle(Context context, TMessage message);
+
+        Task<bool> Handle(Context context, TMessage message);
     }
 
-    public class MessageMapper: IMapper<Message>
+    public interface IMapper<TMessage>
     {
-        public Task<Message> Map(string raw)
-        {
-            throw new NotImplementedException();
-        }
+        Task<bool> Map(Context context, string raw, out TMessage mapped);
     }
 
-    public class MessageHandler : IHandler<Message>
+    public interface IHost
     {
-        public Task<bool> CanHandle(string raw)
-        {
-            throw new NotImplementedException();
-        }
+        IHost ConfigureServices(Action<IConfiguration, IServiceCollection> configureServices);
 
-        public Task Handle(Message message)
-        {
-            throw new NotImplementedException();
-        }
+        IHost AddHandler<TMessage, THandler>()
+            where THandler : IHandler<TMessage>;
+
+        IHost AddMapper<TMessage, TMapper>()
+            where TMapper: IMapper<TMessage>;
+
+        void Start();
     }
 }
