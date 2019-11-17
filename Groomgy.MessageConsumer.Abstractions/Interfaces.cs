@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Groomgy.MessageConsumer.Abstractions
 {
-    public interface IHost<TRaw>
+    public interface IHost<out TRaw>
     {
         IHost<TRaw> ConfigureServices(Action<IConfiguration, IServiceCollection> configureServices);
 
@@ -18,12 +18,12 @@ namespace Groomgy.MessageConsumer.Abstractions
         void Start();
     }
 
-    public interface IPathBuilder<TRaw>
+    public interface IPathBuilder<out TRaw>
     {
-        IHost<TRaw> AddDecoder<TMessage, TMapper>()
+        IPathBuilder<TRaw> AddDecoder<TMessage, TMapper>()
             where TMapper: IDecoder<TRaw, TMessage>;
 
-        IHost<TRaw> AddHandler<TMessage, THandler>()
+        IPathBuilder<TRaw> AddHandler<TMessage, THandler>()
             where THandler : IHandler<TMessage>;
     }
 
@@ -43,7 +43,7 @@ namespace Groomgy.MessageConsumer.Abstractions
     {
         Task<bool> CanDecode(Context context, TMessage message);
 
-        Task<bool> Map(Context context, TRaw raw, out TMessage mapped);
+        Task<bool> Decode(Context context, TRaw raw, out TMessage mapped);
     }
 
     public class Context: Dictionary<string ,string>

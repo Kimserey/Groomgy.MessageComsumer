@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Groomgy.MessageConsumer.Abstractions;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +18,7 @@ namespace Groomgy.MessageConsumer
                 .Map<PathFilter>(pathBuilder =>
                 {
                     pathBuilder
-                        .AddDecoder<Message, MessageMapper>()
+                        .AddDecoder<Message, MessageDecoder>()
                         .AddHandler<Message, MessageHandler>();
                 });
 
@@ -28,6 +29,14 @@ namespace Groomgy.MessageConsumer
                 var line = Console.ReadLine();
                 consumer.Send(line);
             }
+        }
+    }
+
+    public class PathFilter: IPathFiler<string>
+    {
+        public Task<bool> Filter(string message)
+        {
+            throw new NotImplementedException();
         }
     }
 }
