@@ -5,16 +5,21 @@ using Newtonsoft.Json;
 
 namespace Groomgy.MessageConsumer
 {
-    public class MessageMapper: IMapper<Message>
+    public class MessageDecoder: IDecoder<string, Message>
     {
-        private readonly ILogger<MessageMapper> _logger;
+        private readonly ILogger<MessageDecoder> _logger;
 
-        public MessageMapper(ILogger<MessageMapper> logger)
+        public MessageDecoder(ILogger<MessageDecoder> logger)
         {
             _logger = logger;
         }
-    
-        public Task<bool> Map(Context context, string raw, out Message mapped)
+
+        public Task<bool> CanDecode(Context context, string raw)
+        {
+            return Task.FromResult(true);
+        }
+
+        public Task<bool> Decode(Context context, string raw, out Message mapped)
         {
             context["label"] = "V1";
             context["another"] = "something else";

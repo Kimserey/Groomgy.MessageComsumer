@@ -15,6 +15,9 @@
 
     <ItemGroup>
       <Compile Remove="Class1.cs" />
+      <Compile Remove="IHandler.cs" />
+      <Compile Remove="IDecoder.cs" />
+      <Compile Remove="Context.cs" />
     </ItemGroup>
 
 </Project>

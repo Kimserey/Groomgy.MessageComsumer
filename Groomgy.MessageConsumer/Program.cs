@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Threading;
+using System.Threading.Tasks;
 using Groomgy.MessageConsumer.Abstractions;
 using Microsoft.Extensions.Logging;
 
@@ -11,11 +11,15 @@ namespace Groomgy.MessageConsumer
         {
             using var consumer = new Consumer();
 
-            var host = new Host(consumer)
+            var host = new Host<string>(consumer)
                 .ConfigureServices((config, services) => { })
                 .ConfigureLogger(builder => builder.AddConsole())
-                .AddMapper<Message, MessageMapper>()
-                .AddHandler<Message, MessageHandler>();
+                .Map<PathFilter>(pathBuilder =>
+                {
+                    pathBuilder
+                        .AddDecoder<Message, MessageDecoder>()
+                        .AddHandler<Message, MessageHandler>();
+                });
 
             host.Start();
 
@@ -24,6 +28,14 @@ namespace Groomgy.MessageConsumer
                 var line = Console.ReadLine();
                 consumer.Send(line);
             }
+        }
+    }
+
+    public class PathFilter: IPathFilter<string>
+    {
+        public Task<bool> Filter(string message)
+        {
+            return Task.FromResult(true);
         }
     }
 }
