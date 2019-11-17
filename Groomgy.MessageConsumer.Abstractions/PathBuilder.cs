@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Groomgy.MessageConsumer.Abstractions
 {
@@ -68,18 +70,26 @@ namespace Groomgy.MessageConsumer.Abstractions
 
             public async Task<bool> Handle(IServiceProvider services, Context context, TRaw raw)
             {
+                var sw = new Stopwatch();
                 var handled = false;
+
+                var logger = services.GetRequiredService<ILogger<Host<TRaw>>>();
+                sw.Restart();
+                logger.LogInformation(
+                    "Starting handling message. corId={corId} context={context}", 
+                    context.CorrelationId, context
+                );
 
                 foreach (var (decoderMeta, messageType) in _decoders)
                 {
+                    sw.Restart();
                     var decoder =
                         ActivatorUtilities.CreateInstance(services, decoderMeta.Type);
 
-                    var canDecode =
-                        await (Task<bool>) decoderMeta.CanPerform.Invoke(
-                            decoder,
-                            new object[]{ context, raw }
-                        );
+                    var canDecode = await (Task<bool>) decoderMeta.CanPerform.Invoke(
+                        decoder,
+                        new object[] {context, raw}
+                    );
 
                     if (!canDecode)
                         continue;
@@ -126,6 +136,15 @@ namespace Groomgy.MessageConsumer.Abstractions
                                 handler,
                                 new[] {context, decoded}
                             );
+                        
+                        if (handled)
+                        {
+                            sw.Stop();
+                            logger.LogInformation(
+                                "Successfully handled message in {elapsedMs} ms with #{decoderType}/#{handlerType}. corId={corId} context={context}", 
+                                sw.ElapsedMilliseconds, decoderMeta.Type, handlerMeta.Type, context.CorrelationId, context
+                                );
+                        }
                     }
 
                     // Handling has been completed by now,
