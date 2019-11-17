@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Groomgy.MessageConsumer
 {
-    public class MessageMapper: IMapper<Message>
+    public class MessageMapper: IDecoder<Message>
     {
         private readonly ILogger<MessageMapper> _logger;
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -123,7 +124,13 @@ namespace Groomgy.MessageConsumer.Abstractions
 
                         var mapped = args[2];
 
-                        foreach (var (handlerType, canHandleFunc, handleFunc) in _handlerMethods)
+                        foreach (var (handlerType, canHandleFunc, handleFunc) in _handlerMethods.Where(
+                            x =>
+                            {
+                                //// HERE filter those that can handle
+                                var interfaces = x.Item1.GetInterfaces();
+                                return true;
+                            }))
                         {
                             var handler =
                                 ActivatorUtilities.CreateInstance(scope.ServiceProvider, handlerType);

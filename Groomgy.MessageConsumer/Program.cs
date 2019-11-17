@@ -14,8 +14,12 @@ namespace Groomgy.MessageConsumer
             var host = new Host(consumer)
                 .ConfigureServices((config, services) => { })
                 .ConfigureLogger(builder => builder.AddConsole())
-                .AddMapper<Message, MessageMapper>()
-                .AddHandler<Message, MessageHandler>();
+                .Map<PathFilter>(pathBuilder =>
+                {
+                    pathBuilder
+                        .AddDecoder<Message, MessageMapper>()
+                        .AddHandler<Message, MessageHandler>();
+                });
 
             host.Start();
 
