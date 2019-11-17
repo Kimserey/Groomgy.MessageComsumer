@@ -125,6 +125,9 @@ namespace Groomgy.MessageConsumer.Abstractions
 
                     var decoded = args[1];
 
+                    // Once a message has been decoded succesfully,
+                    // we assume that the message to handle is of the decoded type.
+                    // If no handler are registered, a `NoHandlerException` is raised.
                     if (!_handlers.ContainsKey(messageType))
                     {
                         throw new NoHandlerException(

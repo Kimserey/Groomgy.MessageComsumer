@@ -125,6 +125,7 @@ namespace Groomgy.MessageConsumer.Abstractions
         ///
         /// Once decoded, only handlers of the `TMessage` will be
         /// considered.
+        /// And if no handlers are registered, throw a `NoHandlerException`.
         /// </summary>
         Task<bool> Decode(TRaw raw, out TMessage mapped);
     }
