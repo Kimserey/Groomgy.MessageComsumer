@@ -76,6 +76,7 @@ namespace Groomgy.MessageConsumer.Abstractions
                     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Host<TRaw>>>();
                     var context = scope.ServiceProvider.GetRequiredService<Context>();
                     sw.Restart();
+
                     logger.LogInformation(
                         "Starting consuming message. corId={corId} raw={raw}",
                         context.CorrelationId, raw
@@ -131,7 +132,7 @@ namespace Groomgy.MessageConsumer.Abstractions
                             );
                         }
 
-                        // Only one route will be matched.
+                        // Only one path will be matched.
                         // Therefore any succesful match will complete the loop.
                         break;
                     }

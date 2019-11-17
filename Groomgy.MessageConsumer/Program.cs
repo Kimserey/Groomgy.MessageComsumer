@@ -18,12 +18,15 @@ namespace Groomgy.MessageConsumer
                 .ConfigureServices((config, services) => { services.AddScoped<INameService, NameService>(); })
                 .Map<PathFilter>(pathBuilder =>
                 {
+                    // Filtering path will determine which path of decoder/handler to look for.
                     pathBuilder
                         .AddDecoder<Message, MessageDecoder>()
                         .AddHandler<Message, MessageHandler>();
                 })
                 .Map<HelloFilter>(pathBuilder =>
                 {
+                    // For example here HelloDecoder will dictate that HelloHandler will be used.
+                    // As MessageHandler doesn't handle Hello type.
                     pathBuilder
                         .AddDecoder<Hello, HelloDecoder>()
                         .AddHandler<Message, MessageHandler>()

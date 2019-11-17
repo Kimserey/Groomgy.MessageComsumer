@@ -112,13 +112,15 @@ namespace Groomgy.MessageConsumer.Abstractions
                     catch (Exception ex)
                     {
                         throw new DecoderException(
-                            $"Decoding failed for a suited decoder {decoderMeta.Type.Name}. Message={ex.Message}", 
+                            $"Decoding failed for a suited decoder {decoderMeta.Type.Name} " +
+                            $"with an unhandled exception. Message={ex.Message}", 
                             decoderMeta.Type);
                     }
 
                     if (!isDecoded)
                         throw new DecoderException(
-                            $"Decoding failed for a suited decoder {decoderMeta.Type.Name}.", 
+                            $"Decoding failed for a suited decoder {decoderMeta.Type.Name} as " +
+                            $"decoding returned `false`.",
                             decoderMeta.Type);
 
                     var decoded = args[1];
@@ -160,13 +162,14 @@ namespace Groomgy.MessageConsumer.Abstractions
                         catch (Exception ex)
                         {
                             throw new HandlerException(
-                                $"Handling failed for suited handler {handlerMeta.Type.Name}. Message={ex.Message}", 
+                                $"Handling failed for suited handler {handlerMeta.Type.Name} with " +
+                                $"an unhandled exception. Message={ex.Message}", 
                                 handlerMeta.Type);
                         }
 
                         if (!handled) 
                             throw new HandlerException(
-                                $"Handling failed for suited handler {handlerMeta.Type.Name}.", 
+                                $"Handling failed for suited handler {handlerMeta.Type.Name} as handle returned `false`.", 
                                 handlerMeta.Type);
 
                         sw.Stop();
@@ -176,8 +179,10 @@ namespace Groomgy.MessageConsumer.Abstractions
                         );
                     }
 
-                    // Handling has been completed by now,
-                    // therefore we break out of the loop.
+                    // Any suited handler determined by `canHandle`
+                    // is supposed to successfully handle the message.
+                    // Therefore if we reach this point, we can break
+                    // out of the loop.
                     break;
                 }
 
