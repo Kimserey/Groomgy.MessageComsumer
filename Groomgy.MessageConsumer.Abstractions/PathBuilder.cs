@@ -53,7 +53,10 @@ namespace Groomgy.MessageConsumer.Abstractions
 
             public Task<bool> Handle(TRaw message)
             {
-                throw new NotImplementedException();
+                foreach (var decoder in _decoders)
+                {
+                    //decode and find the handler that handle this type based on the underlying type
+                }
             }
         }
 
