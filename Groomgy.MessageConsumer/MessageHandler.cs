@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Groomgy.MessageConsumer
 {
-    public class MessageHandler : IHandler<Message>
+    public class MessageHandler : HandlerBase<Message>
     {
         private readonly ILogger<MessageHandler> _logger;
 
@@ -13,12 +13,12 @@ namespace Groomgy.MessageConsumer
             _logger = logger;
         }
 
-        public Task<bool> CanHandle(Context context, Message message)
+        public override Task<bool> CanHandle(Message message)
         {
             return Task.FromResult(true);
         }
 
-        public Task<bool> Handle(Context context, Message message)
+        public override Task<bool> Handle(Message message)
         {
             return Task.FromResult(true);
         }

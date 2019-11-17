@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Groomgy.MessageConsumer.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Groomgy.MessageConsumer
 {
+
     class Program
     {
         static void Main(string[] args)
@@ -12,8 +13,11 @@ namespace Groomgy.MessageConsumer
             using var consumer = new Consumer();
 
             var host = new Host<string>(consumer)
-                .ConfigureServices((config, services) => { })
                 .ConfigureLogger(builder => builder.AddConsole())
+                .ConfigureServices((config, services) =>
+                {
+                    services.AddScoped<INameService, NameService>();
+                })
                 .Map<PathFilter>(pathBuilder =>
                 {
                     pathBuilder
@@ -28,14 +32,6 @@ namespace Groomgy.MessageConsumer
                 var line = Console.ReadLine();
                 consumer.Send(line);
             }
-        }
-    }
-
-    public class PathFilter: IPathFilter<string>
-    {
-        public Task<bool> Filter(string message)
-        {
-            return Task.FromResult(true);
         }
     }
 }

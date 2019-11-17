@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -28,19 +27,20 @@ namespace Groomgy.MessageConsumer.Abstractions
 
             _configuration = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("appsettings.json", true, true)
                 .Build();
-        }
-
-        public IHost<TRaw> ConfigureServices(Action<IConfiguration, IServiceCollection> configureServices)
-        {
-            configureServices(_configuration, _services);
-            return this;
         }
 
         public IHost<TRaw> ConfigureLogger(Action<ILoggingBuilder> configureLogger)
         {
             _services.AddLogging(configureLogger);
+            return this;
+        }
+
+        public IHost<TRaw> ConfigureServices(Action<IConfiguration, IServiceCollection> configureServices)
+        {
+            _services.AddScoped<Context>();
+            configureServices(_configuration, _services);
             return this;
         }
 
@@ -61,10 +61,7 @@ namespace Groomgy.MessageConsumer.Abstractions
         public void Start()
         {
             var provider =
-            _services.BuildServiceProvider();
-
-            var context = 
-                new Context { CorrelationId = Guid.NewGuid().ToString() };
+                _services.BuildServiceProvider();
 
             var sw = new Stopwatch();
 
@@ -77,6 +74,7 @@ namespace Groomgy.MessageConsumer.Abstractions
                 using (var scope = provider.CreateScope())
                 {
                     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Host<TRaw>>>();
+                    var context = scope.ServiceProvider.GetRequiredService<Context>();
                     sw.Restart();
                     logger.LogInformation(
                         "Starting consuming message. corId={corId} raw={raw}",
@@ -88,6 +86,10 @@ namespace Groomgy.MessageConsumer.Abstractions
                         // Instantiate the filter tied to the mapping.
                         var filter =
                             ActivatorUtilities.CreateInstance(scope.ServiceProvider, path.Filter.Type);
+
+                        path.Filter
+                            .Type.GetProperty("Context")
+                            ?.SetValue(filter, context);
 
                         try
                         {
@@ -111,7 +113,7 @@ namespace Groomgy.MessageConsumer.Abstractions
                         {
                             // Handles the message by invoking the path handler.
                             handled =
-                                await path.Handler.Handle(scope.ServiceProvider, context, raw);
+                                await path.Handler.Handle(scope.ServiceProvider, raw);
                         }
                         catch (Exception ex)
                         {

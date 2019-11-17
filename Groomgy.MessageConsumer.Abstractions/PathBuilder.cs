@@ -86,11 +86,12 @@ namespace Groomgy.MessageConsumer.Abstractions
                 _handlers = handlers;
             }
 
-            public async Task<bool> Handle(IServiceProvider services, Context context, TRaw raw)
+            public async Task<bool> Handle(IServiceProvider services, TRaw raw)
             {
                 var handled = false;
                 var sw = new Stopwatch();
                 var logger = services.GetRequiredService<ILogger<Host<TRaw>>>();
+                var context = services.GetRequiredService<Context>();
 
                 logger.LogInformation(
                     "Starting handling message. corId={corId} context={context}", 
@@ -100,22 +101,26 @@ namespace Groomgy.MessageConsumer.Abstractions
                 foreach (var (decoderMeta, messageType) in _decoders)
                 {
                     sw.Restart();
+
                     var decoder =
                         ActivatorUtilities.CreateInstance(services, decoderMeta.Type);
+
+                    decoderMeta.Type
+                        .GetProperty("Context")
+                        ?.SetValue(decoder, context);
 
                     var canDecode = 
                         await (Task<bool>) decoderMeta.CanPerform.Invoke(
                             decoder,
-                            new object[] {context, raw}
+                            new object[] {raw}
                         );
 
                     if (!canDecode)
                         // Skip current decoder as not suited to decode the message.
                         continue;
 
-                    var args = new object[3];
-                    args[0] = context;
-                    args[1] = raw;
+                    var args = new object[2];
+                    args[0] = raw;
 
                     bool isDecoded;
 
@@ -136,10 +141,10 @@ namespace Groomgy.MessageConsumer.Abstractions
 
                     if (!isDecoded)
                         throw new DecoderException(
-                            $"Decoding failed for a suited decoder {decoderMeta.Type.Name}. Message={ex.Message}", 
+                            $"Decoding failed for a suited decoder {decoderMeta.Type.Name}.", 
                             decoderMeta.Type);
 
-                    var decoded = args[2];
+                    var decoded = args[1];
 
                     if (!_handlers.ContainsKey(messageType))
                     {
@@ -154,10 +159,14 @@ namespace Groomgy.MessageConsumer.Abstractions
                         var handler =
                             ActivatorUtilities.CreateInstance(services, handlerMeta.Type);
 
+                        handlerMeta.Type
+                            .GetProperty("Context")
+                            ?.SetValue(handler, context);
+
                         var canHandle =
                             await (Task<bool>) handlerMeta.CanPerform.Invoke(
                                 handler,
-                                new [] {context, decoded}
+                                new [] {decoded}
                             );
 
                         if (!canHandle)
@@ -168,7 +177,7 @@ namespace Groomgy.MessageConsumer.Abstractions
                             handled =
                                 await (Task<bool>) handlerMeta.Perform.Invoke(
                                     handler,
-                                    new[] {context, decoded}
+                                    new[] {decoded}
                                 );
                         }
                         catch (Exception ex)
@@ -180,7 +189,7 @@ namespace Groomgy.MessageConsumer.Abstractions
 
                         if (!handled) 
                             throw new HandlerException(
-                                $"Handling failed for suited handler {handlerMeta.Type.Name}. Message={ex.Message}", 
+                                $"Handling failed for suited handler {handlerMeta.Type.Name}.", 
                                 handlerMeta.Type);
 
                         sw.Stop();

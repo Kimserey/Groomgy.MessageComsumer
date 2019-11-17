@@ -5,25 +5,29 @@ using Newtonsoft.Json;
 
 namespace Groomgy.MessageConsumer
 {
-    public class MessageDecoder: IDecoder<string, Message>
+    public class MessageDecoder: DecoderBase<string, Message>
     {
         private readonly ILogger<MessageDecoder> _logger;
+        private readonly INameService _service;
 
-        public MessageDecoder(ILogger<MessageDecoder> logger)
+        public MessageDecoder(ILogger<MessageDecoder> logger, INameService service)
         {
             _logger = logger;
+            _service = service;
         }
 
-        public Task<bool> CanDecode(Context context, string raw)
+        public override Task<bool> CanDecode(string raw)
         {
             return Task.FromResult(true);
         }
 
-        public Task<bool> Decode(Context context, string raw, out Message mapped)
+        public override Task<bool> Decode(string raw, out Message mapped)
         {
-            context["label"] = "V1";
-            context["another"] = "something else";
+            Context["label"] = "V1";
+            Context["another"] = "something else";
             mapped = JsonConvert.DeserializeObject<Message>(raw);
+            
+            _logger.LogInformation("From Decoder {name}", _service.GetName());
             return Task.FromResult(true);
         }
     }

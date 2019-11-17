@@ -8,6 +8,24 @@ using Microsoft.Extensions.Logging;
 
 namespace Groomgy.MessageConsumer.Abstractions
 {
+    /// <summary>
+    /// An interface for context'd objects.
+    /// </summary>
+    public interface IContext
+    {
+        Context Context { get; set; }
+    }
+
+    public class Context : Dictionary<string, string>
+    {
+        public string CorrelationId { get; set; }
+
+        public Context()
+        {
+            CorrelationId = Guid.NewGuid().ToString();
+        }
+    }
+
     public interface IHost<TRaw>
     {
         IHost<TRaw> ConfigureServices(Action<IConfiguration, IServiceCollection> configureServices);
@@ -22,7 +40,7 @@ namespace Groomgy.MessageConsumer.Abstractions
 
     public interface IPathHandler<in TRaw>
     {
-        Task<bool> Handle(IServiceProvider services, Context context, TRaw message);
+        Task<bool> Handle(IServiceProvider services, TRaw message);
     }
 
     public interface IPathBuilder<TRaw>
@@ -36,27 +54,47 @@ namespace Groomgy.MessageConsumer.Abstractions
         IPathHandler<TRaw> Build();
     }
 
-    public interface IPathFilter<in TRaw>
+    public interface IPathFilter<in TRaw> : IContext
     {
         Task<bool> Filter(TRaw message);
     }
 
-    public interface IDecoder<in TRaw, TMessage>
+    public abstract class PathFilterBase<TRaw> : IPathFilter<TRaw>
     {
-        Task<bool> CanDecode(Context context, TRaw raw);
+        public abstract Task<bool> Filter(TRaw message);
 
-        Task<bool> Decode(Context context, TRaw raw, out TMessage mapped);
+        public Context Context { get; set; }
     }
 
-    public interface IHandler<in TMessage>
+    public interface IDecoder<in TRaw, TMessage>: IContext
     {
-        Task<bool> CanHandle(Context context, TMessage message);
+        Task<bool> CanDecode(TRaw raw);
 
-        Task<bool> Handle(Context context, TMessage message);
+        Task<bool> Decode(TRaw raw, out TMessage mapped);
     }
 
-    public class Context : Dictionary<string, string>
+    public abstract class DecoderBase<TRaw, TMessage> : IDecoder<TRaw, TMessage>
     {
-        public string CorrelationId { get; set; }
+        public abstract Task<bool> CanDecode(TRaw raw);
+
+        public abstract Task<bool> Decode(TRaw raw, out TMessage mapped);
+
+        public Context Context { get; set; }
+    }
+
+    public interface IHandler<in TMessage>: IContext
+    {
+        Task<bool> CanHandle(TMessage message);
+
+        Task<bool> Handle(TMessage message);
+    }
+
+    public abstract class HandlerBase<TMessage> : IHandler<TMessage>
+    {
+        public abstract Task<bool> CanHandle(TMessage message);
+
+        public abstract Task<bool> Handle(TMessage mapped);
+
+        public Context Context { get; set; }
     }
 }
