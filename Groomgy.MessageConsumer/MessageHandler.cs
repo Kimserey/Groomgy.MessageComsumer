@@ -20,6 +20,7 @@ namespace Groomgy.MessageConsumer
 
         public override Task<bool> Handle(Message message)
         {
+            _logger.LogInformation("From handler {label}.", Context["label"]);
             return Task.FromResult(true);
         }
     }

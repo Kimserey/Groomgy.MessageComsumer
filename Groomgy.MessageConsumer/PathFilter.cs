@@ -17,7 +17,7 @@ namespace Groomgy.MessageConsumer
 
         public override Task<bool> Filter(string message)
         {
-            _logger.LogInformation("From Pathfilter: {name}", _service.GetName());
+            _logger.LogInformation("From Pathfilter: {name} {corId}", _service.GetName(), Context.CorrelationId);
             return Task.FromResult(true);
         }
     }

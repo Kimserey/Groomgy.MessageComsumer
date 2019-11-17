@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace Groomgy.MessageConsumer
 {
@@ -11,9 +12,11 @@ namespace Groomgy.MessageConsumer
     public class NameService : INameService
     {
         private readonly List<string> _data;
+        private readonly ILogger<NameService> _logger;
 
-        public NameService()
+        public NameService(ILogger<NameService> logger)
         {
+            _logger = logger;
             _data = new List<string>();
         }
 
@@ -25,7 +28,7 @@ namespace Groomgy.MessageConsumer
 
         public void Dispose()
         {
-            Console.WriteLine($"{this.GetType().Name} disposed");
+            _logger.LogInformation("{type} disposed", this.GetType().Name);
         }
     }
 }

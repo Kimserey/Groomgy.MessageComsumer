@@ -29,8 +29,17 @@ namespace Groomgy.MessageConsumer
 
             while (true)
             {
+                Console.WriteLine(">> Type the message to send 1) Path1 2) Path2");
                 var line = Console.ReadLine();
-                consumer.Send(line);
+
+                switch (line)
+                {
+                    case "1":
+                        consumer.Send(line);
+                        break;
+                    case "2":
+                        break;
+                }
             }
         }
     }
