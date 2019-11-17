@@ -21,7 +21,7 @@ namespace Groomgy.MessageConsumer
 
         public override Task<bool> Filter(string message)
         {
-            _logger.LogInformation("Hello!");
+            _logger.LogInformation("Hello! corId={corId}", Context.CorrelationId);
             return Task.FromResult(message.Contains("Hello"));
         }
     }

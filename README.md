@@ -47,7 +47,7 @@ When the filter returns true, only the decoders/handlers configured are consider
 
         public override Task<bool> Filter(string message)
         {
-            _logger.LogInformation("Hello!");
+            _logger.LogInformation("Hello! corId={corId}", Context.CorrelationId);
             return Task.FromResult(message.Contains("Hello"));
         }
     }
