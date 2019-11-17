@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Groomgy.MessageConsumer
 {
-    public class Consumer: IConsumer, IDisposable
+    public class Consumer: IConsumer<string>, IDisposable
     {
         private readonly  Subject<string> _subject;
 

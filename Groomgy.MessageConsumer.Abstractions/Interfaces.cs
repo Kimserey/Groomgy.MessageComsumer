@@ -14,14 +14,15 @@ namespace Groomgy.MessageConsumer.Abstractions
 
         IHost<TRaw> ConfigureLogger(Action<ILoggingBuilder> configureLogger);
 
-        IHost<TRaw> Map<TPathFilter>(Action<IPathBuilder<TRaw>> builder) where TPathFilter: IPathFilter<TRaw>;
+        IHost<TRaw> Map<TPathFilter>(Action<IPathBuilder<TRaw>> builder)
+            where TPathFilter: IPathFilter<TRaw>;
 
         void Start();
     }
 
     public interface IPathHandler<in TRaw>
     {
-        Task<bool> Handle(TRaw message);
+        Task<bool> Handle(IServiceProvider services, Context context, TRaw message);
     }
 
     public interface IPathBuilder<TRaw>
@@ -40,18 +41,18 @@ namespace Groomgy.MessageConsumer.Abstractions
         Task<bool> Filter(TRaw message);
     }
 
+    public interface IDecoder<in TRaw, TMessage>
+    {
+        Task<bool> CanDecode(Context context, TRaw raw);
+
+        Task<bool> Decode(Context context, TRaw raw, out TMessage mapped);
+    }
+
     public interface IHandler<in TMessage>
     {
         Task<bool> CanHandle(Context context, TMessage message);
 
         Task<bool> Handle(Context context, TMessage message);
-    }
-
-    public interface IDecoder<in TRaw, TMessage>
-    {
-        Task<bool> CanDecode(Context context, TMessage message);
-
-        Task<bool> Decode(Context context, TRaw raw, out TMessage mapped);
     }
 
     public class Context : Dictionary<string, string>

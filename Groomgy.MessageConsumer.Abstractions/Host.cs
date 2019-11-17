@@ -66,9 +66,6 @@ namespace Groomgy.MessageConsumer.Abstractions
             var context = 
                 new Context { CorrelationId = Guid.NewGuid().ToString() };
 
-            var sw1 = new Stopwatch();
-            var sw2 = new Stopwatch();
-
             _consumer.Consume(async raw =>
             {
                 // Global flags indicating the different stages of a message.
@@ -93,7 +90,7 @@ namespace Groomgy.MessageConsumer.Abstractions
 
                         // Handles the message by invoking the path handler.
                         handled =
-                            await path.Handler.Handle(raw);
+                            await path.Handler.Handle(scope.ServiceProvider, context, raw);
 
                         // Only one route will be matched.
                         // Therefore any succesful match will complete the loop.

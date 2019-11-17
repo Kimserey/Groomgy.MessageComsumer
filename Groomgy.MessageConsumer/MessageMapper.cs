@@ -14,9 +14,9 @@ namespace Groomgy.MessageConsumer
             _logger = logger;
         }
 
-        public Task<bool> CanDecode(Context context, Message message)
+        public Task<bool> CanDecode(Context context, string raw)
         {
-            throw new System.NotImplementedException();
+            return Task.FromResult(true);
         }
 
         public Task<bool> Decode(Context context, string raw, out Message mapped)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Groomgy.MessageConsumer.Abstractions;
 using Microsoft.Extensions.Logging;
@@ -32,11 +31,11 @@ namespace Groomgy.MessageConsumer
         }
     }
 
-    public class PathFilter: IPathFiler<string>
+    public class PathFilter: IPathFilter<string>
     {
         public Task<bool> Filter(string message)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(true);
         }
     }
 }
