@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -10,17 +9,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Groomgy.MessageConsumer.Abstractions
 {
-    public class Host: IHost<string>
+    public class Host<TRaw>: IHost<TRaw>
     {
         private readonly IConsumer _consumer;
         
         private readonly IServiceCollection _services;
         private readonly IConfiguration  _configuration;
 
-        private readonly List<(Type, MethodInfo, MethodInfo)> _handlerMethods = 
-            new List<(Type, MethodInfo, MethodInfo)>();
-        private readonly List<(Type, MethodInfo)> _mapperMethods = 
-            new List<(Type, MethodInfo)>();
 
         public Host(IConsumer consumer)
         {
@@ -34,17 +29,19 @@ namespace Groomgy.MessageConsumer.Abstractions
                 .Build();
         }
 
-        public IHost<string> ConfigureServices(Action<IConfiguration, IServiceCollection> configureServices)
+        public IHost<TRaw> ConfigureServices(Action<IConfiguration, IServiceCollection> configureServices)
         {
-            throw new NotImplementedException();
+            configureServices(_configuration, _services);
+            return this;
         }
 
-        public IHost<string> ConfigureLogger(Action<ILoggingBuilder> configureLogger)
+        public IHost<TRaw> ConfigureLogger(Action<ILoggingBuilder> configureLogger)
         {
-            throw new NotImplementedException();
+            _services.AddLogging(configureLogger);
+            return this;
         }
 
-        public IHost<string> Map<TPathFiler>(Action<IPathBuilder<string>> builder) where TPathFiler : IPathFiler<string>
+        public IHost<TRaw> Map<TPathFiler>(Action<IPathBuilder<TRaw>> builder) where TPathFiler : IPathFiler<TRaw>
         {
             throw new NotImplementedException();
         }
@@ -54,35 +51,12 @@ namespace Groomgy.MessageConsumer.Abstractions
             throw new NotImplementedException();
         }
 
-//        public IHost ConfigureLogger(Action<ILoggingBuilder> configureLogger)
-//        {
-//            _services.AddLogging(configureLogger);
-//            return this;
-//        }
-//
-//        public IHost ConfigureServices(Action<IConfiguration, IServiceCollection> configure)
-//        {
-//            configure(_configuration, _services);
-//            return this;
-//        }
-//
 //        public IHost AddHandler<TMessage, THandler>() where THandler : IHandler<TMessage>
 //        {
-//            _handlerMethods.Add((
-//                typeof(THandler),
-//                typeof(THandler).GetMethod("CanHandle"),
-//                typeof(THandler).GetMethod("Handle")
-//            ));
-//            return this;
 //        }
 //
 //        public IHost AddMapper<TMessage, TMapper>() where TMapper : IMapper<TMessage>
 //        {
-//            _mapperMethods.Add((
-//                typeof(TMapper),
-//                typeof(TMapper).GetMethod("Map")
-//            ));
-//            return this;
 //        }
 //
 //        public void Start()

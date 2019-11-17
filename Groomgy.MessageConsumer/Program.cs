@@ -12,7 +12,7 @@ namespace Groomgy.MessageConsumer
         {
             using var consumer = new Consumer();
 
-            var host = new Host(consumer)
+            var host = new Host<string>(consumer)
                 .ConfigureServices((config, services) => { })
                 .ConfigureLogger(builder => builder.AddConsole())
                 .Map<PathFilter>(pathBuilder =>

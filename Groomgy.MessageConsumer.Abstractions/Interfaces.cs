@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Groomgy.MessageConsumer.Abstractions
 {
-    public interface IHost<out TRaw>
+    public interface IHost<TRaw>
     {
         IHost<TRaw> ConfigureServices(Action<IConfiguration, IServiceCollection> configureServices);
 
@@ -18,13 +19,20 @@ namespace Groomgy.MessageConsumer.Abstractions
         void Start();
     }
 
-    public interface IPathBuilder<out TRaw>
+    public interface IPathHandler<in TRaw>
+    {
+        Task<bool> Handle(TRaw message);
+    }
+
+    public interface IPathBuilder<TRaw>
     {
         IPathBuilder<TRaw> AddDecoder<TMessage, TMapper>()
             where TMapper: IDecoder<TRaw, TMessage>;
 
         IPathBuilder<TRaw> AddHandler<TMessage, THandler>()
             where THandler : IHandler<TMessage>;
+
+        IPathHandler<TRaw> Build();
     }
 
     public interface IPathFiler<in TRaw>
@@ -46,8 +54,17 @@ namespace Groomgy.MessageConsumer.Abstractions
         Task<bool> Decode(Context context, TRaw raw, out TMessage mapped);
     }
 
-    public class Context: Dictionary<string ,string>
+    public class Context : Dictionary<string, string>
     {
         public string CorrelationId { get; set; }
+    }
+
+    public class Meta
+    {
+        public Type Type { get; set; }
+
+        public MethodInfo CanPerform { get; set; }
+
+        public MethodInfo Perform { get; set; }
     }
 }
