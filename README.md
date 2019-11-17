@@ -1,6 +1,13 @@
 ## A framework to consume messages.
 
-Provide a scoped consumption of messages. 
+Provide a scoped consumption of messages, with configuration setup and logging.
+
+- Host
+- Path Filter
+- Decoder
+- Handler
+
+### `Host`
 
 Quick sample of a host definition:
 
@@ -25,10 +32,6 @@ var host = new Host<string>(consumer)
             .AddHandler<Hello, HelloHandler>();
     });
 ```
-
-- Path Filter
-- Decoder
-- Handler
 
 ### `Path Filter`
 
