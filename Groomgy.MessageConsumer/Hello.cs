@@ -22,7 +22,7 @@ namespace Groomgy.MessageConsumer
         public override Task<bool> Filter(string message)
         {
             _logger.LogInformation("Hello!");
-            return Task.FromResult(message == "Hello");
+            return Task.FromResult(message.Contains("Hello"));
         }
     }
 
