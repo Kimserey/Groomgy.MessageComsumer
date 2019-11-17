@@ -57,6 +57,8 @@ The filter supports dependency injection. Inherit from `PathFilterBase` as the `
 
 ### `Decoder`
 
+A decoder is used to decode from a raw message to a decoded message.
+
 ```c#
 public class HelloDecoder : DecoderBase<string, Hello>
 {
@@ -81,7 +83,14 @@ public class HelloDecoder : DecoderBase<string, Hello>
 }
 ```
 
+`CanDecode` defines whether the decoder is suited to decode the message. `Decode` decodes the message.
+Dependency injection is supported via constructor injection.
+
+Once deemed as suited, only handlers able to handle the same decoded message type will be considered.
+
 ### `Handler`
+
+A handler is used to handle a decoded message.
 
 ```c#
 public class HelloHandler : HandlerBase<Hello>
@@ -105,3 +114,8 @@ public class HelloHandler : HandlerBase<Hello>
     }
 }
 ```
+
+`CanHandle` defines whether the handler is suited to handle the message. `Handle` handles the message.
+Dependency injection is supported via constructor injection.
+
+Once deemed as suited, the handler is expected to handle the message, else an exception will be thrown.
