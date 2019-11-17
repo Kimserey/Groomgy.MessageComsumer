@@ -79,7 +79,8 @@ namespace Groomgy.MessageConsumer.Abstractions
                     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Host<TRaw>>>();
                     sw.Restart();
                     logger.LogInformation(
-                        "Starting consuming message. corId={corId}", context.CorrelationId
+                        "Starting consuming message. corId={corId} raw={raw}",
+                        context.CorrelationId, raw
                     );
 
                     foreach (var path in _paths)
