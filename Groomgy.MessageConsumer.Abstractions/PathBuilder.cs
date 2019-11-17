@@ -5,15 +5,6 @@ using System.Threading.Tasks;
 
 namespace Groomgy.MessageConsumer.Abstractions
 {
-    public class Meta
-    {
-        public Type Type { get; set; }
-
-        public MethodInfo CanPerform { get; set; }
-
-        public MethodInfo Perform { get; set; }
-    }
-
     public class PathBuilder<TRaw> : IPathBuilder<TRaw>
     {
         private readonly List<Meta> _decoderMethods = 
@@ -64,6 +55,15 @@ namespace Groomgy.MessageConsumer.Abstractions
             {
                 throw new NotImplementedException();
             }
+        }
+
+        public class Meta
+        {
+            public Type Type { get; set; }
+
+            public MethodInfo CanPerform { get; set; }
+
+            public MethodInfo Perform { get; set; }
         }
     }
 }

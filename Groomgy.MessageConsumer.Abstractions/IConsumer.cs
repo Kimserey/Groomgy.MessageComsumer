@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 
 namespace Groomgy.MessageConsumer.Abstractions
 {
-    public interface IConsumer
+    public interface IConsumer<out TRaw>
     {
-        Task Consume(Action<string> consume);
+        Task Consume(Action<TRaw> consume);
     }
 }

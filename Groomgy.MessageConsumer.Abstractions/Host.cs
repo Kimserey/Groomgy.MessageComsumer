@@ -12,15 +12,15 @@ namespace Groomgy.MessageConsumer.Abstractions
 {
     public class Host<TRaw>: IHost<TRaw>
     {
-        private readonly IConsumer _consumer;
+        private readonly IConsumer<TRaw> _consumer;
         
         private readonly IServiceCollection _services;
         private readonly IConfiguration  _configuration;
 
-        private readonly List<IPathHandler<TRaw>> _paths =
-            new List<IPathHandler<TRaw>>();
+        private readonly List<PathMeta> _paths =
+            new List<PathMeta>();
 
-        public Host(IConsumer consumer)
+        public Host(IConsumer<TRaw> consumer)
         {
             _consumer = consumer;
 
@@ -44,17 +44,87 @@ namespace Groomgy.MessageConsumer.Abstractions
             return this;
         }
 
-        public IHost<TRaw> Map<TPathFiler>(Action<IPathBuilder<TRaw>> configure) where TPathFiler : IPathFiler<TRaw>
+        public IHost<TRaw> Map<TPathFilter>(Action<IPathBuilder<TRaw>> configure) where TPathFilter : IPathFilter<TRaw>
         {
             var builder = new PathBuilder<TRaw>();
             configure(builder);
-            _paths.Add(builder.Build());
+            _paths.Add(new PathMeta {
+                Filter = new PathMeta.FilterMeta {
+                    Type = typeof(TPathFilter),
+                    Method = typeof(TPathFilter).GetMethod("Filter")
+                },
+                Handler = builder.Build()
+            });
             return this;
         }
 
         public void Start()
         {
-            throw new NotImplementedException();
+            var provider =
+            _services.BuildServiceProvider();
+
+            var context = 
+                new Context { CorrelationId = Guid.NewGuid().ToString() };
+
+            var sw1 = new Stopwatch();
+            var sw2 = new Stopwatch();
+
+            _consumer.Consume(async raw =>
+            {
+                // Global flags indicating the different stages of a message.
+                var mapped = false;
+                var handled = false;
+
+                using (var scope = provider.CreateScope())
+                {
+                    foreach (var path in _paths)
+                    {
+                        // Instantiate the filter tied to the mapping.
+                        var filter =
+                            ActivatorUtilities.CreateInstance(scope.ServiceProvider, path.Filter.Type);
+
+                        // Executes the filtering logic and identify mapped route.
+                        mapped =
+                            await (Task<bool>) path.Filter.Method.Invoke(filter, new object[] { raw });
+
+                        if (!mapped)
+                            // Skip current route if not mapped.
+                            continue;
+
+                        // Handles the message by invoking the path handler.
+                        handled =
+                            await path.Handler.Handle(raw);
+
+                        // Only one route will be matched.
+                        // Therefore any succesful match will complete the loop.
+                        break;
+                    }
+                }
+
+                if (!mapped)
+                {
+                    //Log warning when no map
+                }
+
+                if (mapped && !handled)
+                {
+                    //Log error when mapped but not handled
+                }
+            });
+        }
+
+        public class PathMeta
+        {
+            public FilterMeta Filter { get; set; }
+
+            public IPathHandler<TRaw> Handler { get; set; }
+
+            public class FilterMeta
+            {
+                public Type Type { get; set; }
+
+                public MethodInfo Method { get; set; }
+            }
         }
 
 //        public IHost AddHandler<TMessage, THandler>() where THandler : IHandler<TMessage>

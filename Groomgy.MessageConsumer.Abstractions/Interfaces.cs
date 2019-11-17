@@ -14,7 +14,7 @@ namespace Groomgy.MessageConsumer.Abstractions
 
         IHost<TRaw> ConfigureLogger(Action<ILoggingBuilder> configureLogger);
 
-        IHost<TRaw> Map<TPathFiler>(Action<IPathBuilder<TRaw>> builder) where TPathFiler: IPathFiler<TRaw>;
+        IHost<TRaw> Map<TPathFilter>(Action<IPathBuilder<TRaw>> builder) where TPathFilter: IPathFilter<TRaw>;
 
         void Start();
     }
@@ -35,7 +35,7 @@ namespace Groomgy.MessageConsumer.Abstractions
         IPathHandler<TRaw> Build();
     }
 
-    public interface IPathFiler<in TRaw>
+    public interface IPathFilter<in TRaw>
     {
         Task<bool> Filter(TRaw message);
     }
