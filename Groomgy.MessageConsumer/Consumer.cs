@@ -17,7 +17,7 @@ namespace Groomgy.MessageConsumer
 
         public void Send(string message)
         {
-            _subject.OnNext(JsonConvert.SerializeObject(new Message { Content = message }));
+            _subject.OnNext(message);
         }
 
         public Task Consume(Action<string> consume)

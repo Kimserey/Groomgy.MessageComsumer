@@ -2,6 +2,7 @@
 using Groomgy.MessageConsumer.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Groomgy.MessageConsumer
 {
@@ -14,15 +15,19 @@ namespace Groomgy.MessageConsumer
 
             var host = new Host<string>(consumer)
                 .ConfigureLogger(builder => builder.AddConsole())
-                .ConfigureServices((config, services) =>
-                {
-                    services.AddScoped<INameService, NameService>();
-                })
+                .ConfigureServices((config, services) => { services.AddScoped<INameService, NameService>(); })
                 .Map<PathFilter>(pathBuilder =>
                 {
                     pathBuilder
                         .AddDecoder<Message, MessageDecoder>()
                         .AddHandler<Message, MessageHandler>();
+                })
+                .Map<HelloFilter>(pathBuilder =>
+                {
+                    pathBuilder
+                        .AddDecoder<Hello, HelloDecoder>()
+                        .AddHandler<Message, MessageHandler>()
+                        .AddHandler<Hello, HelloHandler>();
                 });
 
             host.Start();
@@ -35,9 +40,10 @@ namespace Groomgy.MessageConsumer
                 switch (line)
                 {
                     case "1":
-                        consumer.Send(line);
+                        consumer.Send(JsonConvert.SerializeObject(new Message { Content = "hehe" }));
                         break;
                     case "2":
+                        consumer.Send(JsonConvert.SerializeObject(new Hello { Text = "Hello!"}));
                         break;
                 }
             }

@@ -13,6 +13,7 @@ namespace Groomgy.MessageConsumer.Abstractions
         {
             DecoderType = decoderType;
         }
+
         public Type DecoderType { get; }
     }
 
@@ -22,6 +23,7 @@ namespace Groomgy.MessageConsumer.Abstractions
         {
             HandlerType = handlerType;
         }
+
         public Type HandlerType { get; }
     }
 }
