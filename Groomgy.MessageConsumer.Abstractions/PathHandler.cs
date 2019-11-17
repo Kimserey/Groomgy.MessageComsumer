@@ -67,6 +67,7 @@ namespace Groomgy.MessageConsumer.Abstractions
             {
                 var handled = false;
                 var sw = new Stopwatch();
+
                 var logger = services.GetRequiredService<ILogger<Host<TRaw>>>();
                 var context = services.GetRequiredService<Context>();
 

@@ -67,7 +67,6 @@ namespace Groomgy.MessageConsumer.Abstractions
 
             _consumer.Consume(async raw =>
             {
-                // Global flags indicating the different stages of a message.
                 var filtered = false;
                 var handled = false;
 
@@ -84,7 +83,7 @@ namespace Groomgy.MessageConsumer.Abstractions
 
                     foreach (var path in _paths)
                     {
-                        // Instantiate the filter tied to the mapping.
+                        // Instantiates the filter tied to the mapping.
                         var filter =
                             ActivatorUtilities.CreateInstance(scope.ServiceProvider, path.Filter.Type);
 
