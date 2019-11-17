@@ -58,13 +58,4 @@ namespace Groomgy.MessageConsumer.Abstractions
     {
         public string CorrelationId { get; set; }
     }
-
-    public class Meta
-    {
-        public Type Type { get; set; }
-
-        public MethodInfo CanPerform { get; set; }
-
-        public MethodInfo Perform { get; set; }
-    }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -16,6 +17,8 @@ namespace Groomgy.MessageConsumer.Abstractions
         private readonly IServiceCollection _services;
         private readonly IConfiguration  _configuration;
 
+        private readonly List<IPathHandler<TRaw>> _paths =
+            new List<IPathHandler<TRaw>>();
 
         public Host(IConsumer consumer)
         {
@@ -41,9 +44,12 @@ namespace Groomgy.MessageConsumer.Abstractions
             return this;
         }
 
-        public IHost<TRaw> Map<TPathFiler>(Action<IPathBuilder<TRaw>> builder) where TPathFiler : IPathFiler<TRaw>
+        public IHost<TRaw> Map<TPathFiler>(Action<IPathBuilder<TRaw>> configure) where TPathFiler : IPathFiler<TRaw>
         {
-            throw new NotImplementedException();
+            var builder = new PathBuilder<TRaw>();
+            configure(builder);
+            _paths.Add(builder.Build());
+            return this;
         }
 
         public void Start()

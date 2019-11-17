@@ -5,21 +5,13 @@ using System.Threading.Tasks;
 
 namespace Groomgy.MessageConsumer.Abstractions
 {
-    public class PathHandler<TRaw>: IPathHandler<TRaw>
+    public class Meta
     {
-        private readonly Meta[] _decoders;
-        private readonly Meta[] _handlers;
+        public Type Type { get; set; }
 
-        public PathHandler(Meta[] decoders, Meta[] handlers)
-        {
-            _decoders = decoders;
-            _handlers = handlers;
-        }
+        public MethodInfo CanPerform { get; set; }
 
-        public Task<bool> Handle(TRaw message)
-        {
-            throw new NotImplementedException();
-        }
+        public MethodInfo Perform { get; set; }
     }
 
     public class PathBuilder<TRaw> : IPathBuilder<TRaw>
@@ -51,10 +43,27 @@ namespace Groomgy.MessageConsumer.Abstractions
 
         public IPathHandler<TRaw> Build()
         {
-            return new PathHandler<TRaw>(
+            return new PathHandler(
                 _decoderMethods.ToArray(),
                 _handlerMethods.ToArray()
             );
+        }
+
+        public class PathHandler: IPathHandler<TRaw>
+        {
+            private readonly Meta[] _decoders;
+            private readonly Meta[] _handlers;
+
+            public PathHandler(Meta[] decoders, Meta[] handlers)
+            {
+                _decoders = decoders;
+                _handlers = handlers;
+            }
+
+            public Task<bool> Handle(TRaw message)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
