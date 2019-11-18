@@ -137,6 +137,8 @@ namespace Groomgy.MessageConsumer.Abstractions
                             "your `PathFilter` is configured to map to the right hanlders.");
                     }
 
+                    var canHandle = false;
+
                     foreach (var handlerMeta in _handlers[messageType])
                     {
                         var handler =
@@ -146,7 +148,7 @@ namespace Groomgy.MessageConsumer.Abstractions
                             .GetProperty("Context")
                             ?.SetValue(handler, context);
 
-                        var canHandle =
+                        canHandle =
                             await (Task<bool>) handlerMeta.CanPerform.Invoke(
                                 handler,
                                 new [] {decoded}
@@ -173,14 +175,26 @@ namespace Groomgy.MessageConsumer.Abstractions
 
                         if (!handled) 
                             throw new HandlerException(
-                                $"Handling failed for suited handler {handlerMeta.Type.Name} as handle returned `false`.", 
+                                $"Handling failed for suited handler {handlerMeta.Type.Name} as handle " +
+                                "returned `false`.", 
                                 handlerMeta.Type);
 
                         sw.Stop();
                         logger.LogInformation(
-                            "Successfully handled message in {elapsedMs} ms with #{decoderType}/#{handlerType}. corId={corId} context={context}", 
-                            sw.ElapsedMilliseconds, decoderMeta.Type, handlerMeta.Type, context.CorrelationId, context
+                            "Successfully handled message in {elapsedMs} ms with " +
+                            "#{decoderType}/#{handlerType}. corId={corId} context={context}",
+                            sw.ElapsedMilliseconds, decoderMeta.Type, handlerMeta.Type,
+                            context.CorrelationId, context
                         );
+                    }
+                    
+                    if (!canHandle)
+                    {
+                        throw new NoHandlerException(
+                            "None of the handlers registered are able to handle the " +
+                            "current message. Verify that you have a handler which can handle " +
+                            "the message. Or verfiy that your `PathFilter` is configured to map " +
+                            "to the right hanlders.");
                     }
 
                     // Any suited handler determined by `canHandle`
